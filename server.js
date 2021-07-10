@@ -1,47 +1,37 @@
 'use strict';
-const express =require('express');
+const { response } = require('express');
+const express = require('express');
+const server = express();
 require('dotenv').config();
-const cors =require('cors');
-
-
-
-const weather =require('./assets/weather.json')
-const server=express();
-const PORT =process.env.PORT;
+const weather = require('./assests/weather.json');
+const cors = require('cors');
+const { default: axios } = require('axios');
+const weatherHandler = require('./modules/weather');
+const moviesHandler = require('./modules/movies');
+const yeldHandler = require('./modules/yeld')
 server.use(cors());
-
-
-
-server.listen(PORT,()=>{  
-      console.log(`i am listing ${PORT}`)});
-
-let newArray=[];
-
-class serverApi {
-    constructor (descriptinWather,data){
-this.descriptinWather=descriptinWather
-this.data=data
-newArray.push(this);
-    }
-}
-
-
-//http:localhost:3002/weather?cityName=Amman&lon=35.91&lat=31.95
-server.get('/weather',(req,res)=>{
-    console.log(req.query)
-    let cityname=req.query.cityname
-    let seclect=weather.find((value) =>
-    {
-        if (value.cityname === cityname){
-            return value
-        }
-    })
-    for(let x=0;x<seclect.data.length;x++){
-        new serverApi (seclect.data[x].weather.description,seclect.data[x].valid_date)
-    }
-    res.send(newArray);
+//PORT
+const PORT = process.env.PORT;
+// localhost:3001/
+server.get('/', (request, response) => {
+    response.status(200).send('Home Route')
 })
-
-server.get('*',(req,res)=>{
-    res.status(404).send('Ops ... the city is  not found')
+// localhost:3001/test
+server.get('/test', (request, response) => {
+    response.status(200).send('My server is working')
+})
+// -------- WeatherBit ---------//
+// localhost:3001/weatherinfo?cityName=Seattle
+server.get('/weatherinfo', weatherHandler);
+// -------- MOVIES ---------//
+// localhost:3001/moviesinfo?cityName=Seattle
+server.get('/moviesinfo', moviesHandler);
+//--------- Yeld -----------//
+server.get('/yeld', yeldHandler);
+// Error
+server.get('*', (request, response) => {
+    response.status(404).send('Not Found')
+})
+server.listen(PORT, () => {
+    console.log(`Listenng on Port : ${PORT}`);
 })
